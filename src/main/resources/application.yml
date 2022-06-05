@@ -1,0 +1,18 @@
+#server:
+#  port: 8082
+#  servlet:
+#    context-path: "/api/v1"
+#spring:
+#  datasource:
+#    url: "jdbc:postgresql://localhost:5432/wallet-app2"
+#    password:
+#    username: "postgres"
+#    driver-class-name: "org.postgresql.Driver"
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#    show-sql: true
+
+#
+#    http://localhost:8082/api/v1/swagger-ui/index:
+#      html?configUrl=/api/v1/v3/api-docs/swagger-config#/:
