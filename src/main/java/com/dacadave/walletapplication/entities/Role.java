@@ -1,4 +1,4 @@
-package com.dacadave.walletapplication.entity;
+package com.dacadave.walletapplication.entities;
 
 import lombok.*;
 
@@ -9,7 +9,6 @@ import javax.persistence.Table;
 @Entity
 @Getter
 @Setter
-@Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor

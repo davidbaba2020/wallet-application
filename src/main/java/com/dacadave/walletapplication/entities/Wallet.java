@@ -1,4 +1,4 @@
-package com.dacadave.walletapplication.entity;
+package com.dacadave.walletapplication.entities;
 
 
 import com.dacadave.walletapplication.enums.WalletType;
@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 
 @Table
@@ -19,11 +20,18 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Wallet extends BaseClass{
+
     private Long walletOwnerId;
-    private Double amount;
-    private Integer walletAccountNumber;
+
+    private Double currentBalance;
+
+    private String walletAccountNumber;
+
     @Enumerated(EnumType.STRING)
     private WalletType walletType;
+
+    @Size(min = 4, max =4)
     private String transactionPin;
+
     private String accountHolderEmail;
 }

@@ -1,4 +1,4 @@
-package com.dacadave.walletapplication.entity;
+package com.dacadave.walletapplication.enums;
 
 public enum ProductCatigory {
     FOOD,

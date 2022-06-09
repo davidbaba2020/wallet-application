@@ -1,10 +1,11 @@
-package com.dacadave.walletapplication.entity;
+package com.dacadave.walletapplication.entities;
 
+import com.dacadave.walletapplication.enums.ProductCatigory;
 import lombok.*;
-import org.hibernate.annotations.Tables;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 
 @Table
 @Entity
@@ -15,7 +16,10 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product extends BaseClass{
+    @NotBlank(message ="Product name can't be blank")
     private String productName;
+
     private Double productAmount;
+
     private ProductCatigory catigory;
 }
