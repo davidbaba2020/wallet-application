@@ -4,7 +4,6 @@ import com.dacadave.walletapplication.responses.ApiResponse;
 import com.dacadave.walletapplication.responses.HttpResponse;
 import com.dacadave.walletapplication.responses.ResponseData;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.persistence.NoResultException;
-import javax.security.auth.login.AccountLockedException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,7 +97,7 @@ public class BaseExceptionHandler
     }
 
     @ExceptionHandler(WalletAccountWithAccountNumberNotFound.class)
-    public ResponseEntity<ResponseData> UserAlreadyExistsException(WalletAccountWithAccountNumberNotFound e)
+    public ResponseEntity<ResponseData> WalletAccountWithAccountNumberNotFound(WalletAccountWithAccountNumberNotFound e)
     {
         return createHttpResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
@@ -110,11 +108,32 @@ public class BaseExceptionHandler
         return createHttpResponse(HttpStatus.UNAUTHORIZED, NOT_ENOUGH_PERMISSION);
     }
 
-    @ExceptionHandler(ResourceNotFound.class)
-    public ResponseEntity<ResponseData> resourceNotFoundException(ResourceNotFound exception)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ResponseData> resourceNotFoundException(ResourceNotFoundException exception)
     {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
+
+
+    @ExceptionHandler(RoleAlreadyExistExceptions.class)
+    public ResponseEntity<ResponseData> RoleAlreadyExist(RoleAlreadyExistExceptions e)
+    {
+        return createHttpResponse(HttpStatus.ALREADY_REPORTED, e.getMessage());
+    }
+
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ResponseData> RoleNotFoundException(RoleNotFoundException e)
+    {
+        return createHttpResponse(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(WrongActivationException.class)
+    public ResponseEntity<ResponseData> WrongActivationException(WrongActivationException e)
+    {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
 
     private ResponseEntity<ResponseData> createHttpResponse(HttpStatus httpStatus, String message)
     {

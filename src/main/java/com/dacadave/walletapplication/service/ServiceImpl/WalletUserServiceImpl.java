@@ -2,29 +2,32 @@ package com.dacadave.walletapplication.service.ServiceImpl;
 
 import com.dacadave.walletapplication.dto.AccountActivationDto;
 import com.dacadave.walletapplication.dto.PinChangeDto;
+import com.dacadave.walletapplication.dto.RoleDto;
 import com.dacadave.walletapplication.dto.WalletUserDto;
+import com.dacadave.walletapplication.entities.Role;
 import com.dacadave.walletapplication.entities.Wallet;
 import com.dacadave.walletapplication.entities.WalletUser;
 import com.dacadave.walletapplication.enums.WalletType;
-import com.dacadave.walletapplication.exceptions.AccountIsNotActivatedException;
-import com.dacadave.walletapplication.exceptions.PinMustBeDifferentFromInitialPinException;
-import com.dacadave.walletapplication.exceptions.UserAlreadyExistsException;
-import com.dacadave.walletapplication.exceptions.UserWithEmailNotFound;
+import com.dacadave.walletapplication.exceptions.*;
+import com.dacadave.walletapplication.repository.RoleRepository;
 import com.dacadave.walletapplication.repository.WalletRepository;
 import com.dacadave.walletapplication.repository.WalletUserRepository;
 import com.dacadave.walletapplication.service.WalletUserInterface;
 import com.dacadave.walletapplication.utils.mail_sender.MailSenderImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
+import javax.transaction.Transactional;
+import java.util.*;
 
 import static com.dacadave.walletapplication.global_constants.Constants.*;
 
+
+@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WalletUserServiceImpl implements WalletUserInterface
 {
@@ -33,16 +36,29 @@ public class WalletUserServiceImpl implements WalletUserInterface
     private final WalletRepository walletRepository;
     private final ModelMapper mapper;
     private final MailSenderImpl mailSender;
+    private final RoleRepository roleRepository;
 
     @Override
     public String signUpAsAUser(WalletUserDto walletUser)
     {
+        String msg = "";
         Optional<WalletUser> userDoExist = walletUserRepository.findUserByEmail(walletUser.getEmail());
 
         if(userDoExist.isEmpty())
         {
             WalletUser newUser = mapper.map(walletUser, WalletUser.class);
-            walletUserRepository.save(newUser);
+
+                Set<Role>   userRole = new HashSet<Role>();
+                            userRole.add(new Role("USER".toUpperCase()));
+                newUser.setRoles(userRole);
+
+                Optional<Role> userRoleExist = Optional.empty();
+                for(Role r : newUser.getRoles()) {
+                    userRoleExist = Optional.ofNullable(roleRepository.findByName(r.getName().toUpperCase()).orElseThrow(()->
+                    new RoleNotFoundException(ROLE_NOT_FOUND)));
+                }
+
+                walletUserRepository.save(newUser);
 
             Wallet newWallet = walletRepository.save(createWalletForNewUser(newUser, this.walletRepository));
 
@@ -55,15 +71,17 @@ public class WalletUserServiceImpl implements WalletUserInterface
             mailSender.sendMail(
                     "DAVACOM_WALLET_INT_BIZ",
                     walletUser.getEmail(),
-                    "Account creation And Activation Process",
+                    "Account Creation And Activation Process",
                     messageToActivate
             );
+
+            msg = "Account Created Successfully, check email for further instructions";
 
         } else
         {
             throw new UserAlreadyExistsException("A user with this email already exist!");
         }
-        return null;
+        return msg;
     }
 
     @Override
@@ -76,15 +94,23 @@ public class WalletUserServiceImpl implements WalletUserInterface
         Optional<Wallet> usersWalletExist = Optional.of(walletRepository.findByAccountHolderEmail(accountActivation.getEmail())).orElseThrow(()->
                 new UserWithEmailNotFound(WALLET_NOT_FOUND));
 
+        if(userDoExist.isEmpty()) {
+            throw new UserWithEmailNotFound(USER_NOT_FOUND);
+        }
+
         if(userDoExist.get().isAccountVerified())
         {
             msg = "Your account is already Activated";
         }
         else if(Objects.equals(accountActivation.getCode(), usersWalletExist.get().getTransactionPin()))
         {
+            log.info("Activating new account, {}", userDoExist.get().getEmail());
             userDoExist.get().setAccountVerified(true);
             walletUserRepository.save(userDoExist.get());
             msg = "Your Account has been successfully activated";
+        } else
+        {
+            throw new WrongActivationException(WRONG_ACTIVATION_CODE);
         }
 
         return msg;
@@ -118,6 +144,24 @@ public class WalletUserServiceImpl implements WalletUserInterface
     }
 
 
+    @Override
+    public String saveRole(RoleDto roleDto)
+    {
+        log.info("Saving new user role, {}", roleDto.getName());
+        Optional<Role> newRole = roleRepository.findByName(roleDto.getName().toUpperCase());
+        if(newRole.isEmpty())
+        {
+            RoleDto roleDtoCapitalized = new RoleDto();
+            roleDtoCapitalized.setName(roleDto.getName().toUpperCase());
+            Role roleToSave = mapper.map(roleDtoCapitalized, Role.class);
+            roleRepository.save(roleToSave);
+        } else
+        {
+            throw new RoleAlreadyExistExceptions("Role already exist");
+        }
+        return "Role saved successfully";
+
+    }
 
 
     static Wallet createWalletForNewUser(WalletUser newUser, WalletRepository walletRepository)

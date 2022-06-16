@@ -1,5 +1,6 @@
 package com.dacadave.walletapplication.dto;
 
+import com.dacadave.walletapplication.entities.Role;
 import com.dacadave.walletapplication.enums.Gender;
 import lombok.*;
 
@@ -7,6 +8,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Getter
@@ -32,5 +35,9 @@ public class WalletUserDto {
 
         @Enumerated(EnumType.STRING)
         private Gender gender;
+
+        @Enumerated(EnumType.STRING)
+        private Set<Role> roles = new HashSet<>();
+
 
 }

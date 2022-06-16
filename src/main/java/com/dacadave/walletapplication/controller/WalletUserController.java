@@ -2,6 +2,7 @@ package com.dacadave.walletapplication.controller;
 
 import com.dacadave.walletapplication.dto.AccountActivationDto;
 import com.dacadave.walletapplication.dto.PinChangeDto;
+import com.dacadave.walletapplication.dto.RoleDto;
 import com.dacadave.walletapplication.dto.WalletUserDto;
 import com.dacadave.walletapplication.responses.HttpResponse;
 import com.dacadave.walletapplication.responses.ResponseData;
@@ -34,7 +35,7 @@ public class WalletUserController {
 
 
     @PutMapping("/account-activation")
-    public ResponseEntity<ResponseData> verifyAccount (@RequestBody AccountActivationDto accountActivation)
+    public ResponseEntity<ResponseData> verifyAndActivateAccount(@RequestBody AccountActivationDto accountActivation)
     {
         return response(OK,walletUserService.accountActivation(accountActivation));
     }
@@ -46,9 +47,15 @@ public class WalletUserController {
         return response(OK,walletUserService.changeTransactionPin(pinChangeDto));
     }
 
+    @PostMapping(value = "/create-role")
+    public ResponseEntity<ResponseData> createRole(@RequestBody RoleDto roleDto)
+    {
+        return response(OK, walletUserService.saveRole(roleDto));
+    }
 
 
-    public static ResponseEntity<ResponseData> response(HttpStatus httpStatus, String message) {
+    public static ResponseEntity<ResponseData> response(HttpStatus httpStatus, String message)
+    {
         return new  ResponseEntity<>(new ResponseData(new HttpResponse(httpStatus.value(),
                 httpStatus, httpStatus.getReasonPhrase().toUpperCase(),
                 message.toUpperCase())), httpStatus );
